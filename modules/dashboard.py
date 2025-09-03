@@ -4,8 +4,9 @@ import streamlit as st
 import pandas as pd
 from modules.data_loader import load_payment_report, load_employee_performance
 
+
 def show():
-    st.title("📊 General Business Dashboard")
+    st.title("🏠 Overview")
 
     # ---------- Load Data ----------
     SALES_FILE = "CompanyPaymentReport (6).csv"
@@ -43,7 +44,6 @@ def show():
             """,
             unsafe_allow_html=True
         )
-
     # ---------- Sales by Currency ----------
     st.subheader("💰 Total Sales by Currency")
 
@@ -54,6 +54,7 @@ def show():
             .reset_index()
             .sort_values("Net Amount", ascending=False)
         )
+
         st.dataframe(sales_by_currency, use_container_width=True)
     else:
         st.warning("⚠️ Columns 'Currency' and 'Net Amount' not found in sales data.")
@@ -64,16 +65,18 @@ def show():
     st.subheader("👨‍💼 Employee Performance Summary")
 
     if not emp_df.empty:
-        total_reservations = emp_df["reservations"].sum() if "reservations" in emp_df.columns else 0
-        total_pax = emp_df["pax"].sum() if "pax" in emp_df.columns else 0
-        total_revenue = emp_df["total_charges"].sum() if "total_charges" in emp_df.columns else 0
-        total_discount = emp_df["total_discount"].sum() if "total_discount" in emp_df.columns else 0
-        total_employees = emp_df["user_name"].nunique() if "user_name" in emp_df.columns else 0
-
-        st.write(f"📝 Total Reservations: {total_reservations:,}")
-        st.write(f"👥 Total PAX: {total_pax:,}")
-        st.write(f"💵 Total Revenue ($): {total_revenue:,.2f}")
-        st.write(f"🔖 Total Discounts ($): {total_discount:,.2f}")
-        st.write(f"👤 Employees Contributed: {total_employees:,}")
+        # Show top 5 employees by revenue
+        if "user_name" in emp_df.columns and "total_charges" in emp_df.columns:
+            top_employees = (
+                emp_df.groupby("user_name")["total_charges"]
+                .sum()
+                .reset_index()
+                .sort_values("total_charges", ascending=False)
+                .head(5)
+            )
+            st.write("🏆 Top 5 Employees by Revenue")
+            st.dataframe(top_employees, use_container_width=True)
+        else:
+            st.info("ℹ️ Employee columns not found.")
     else:
         st.warning("⚠️ Employee performance data not found.")
