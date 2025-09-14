@@ -4,3 +4,7 @@ seaborn
 matplotlib
 streamlit-aggrid
 plotly
+tensorflow
+scikit-learn
+prophet
+streamlit-cookies-manager
