@@ -15,7 +15,7 @@ def show():
     try:
         sales_df = load_payment_report(SALES_FILE)
         emp_df = load_employee_performance(EMP_FILE)
-        st.success("✅ Data loaded successfully!")
+       
     except Exception as e:
         st.error(f"❌ Error loading data: {e}")
         return

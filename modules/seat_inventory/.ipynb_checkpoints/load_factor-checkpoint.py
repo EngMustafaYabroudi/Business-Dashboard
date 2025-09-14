@@ -48,15 +48,7 @@ def show(df):
     summary["load_factor"] = (summary["seats_sold_total"] / summary["seats_allocated_total"] * 100).fillna(0)
     summary = summary.sort_values("load_factor", ascending=False)
 
-    # رسم Load Factor
-    fig, ax = plt.subplots(figsize=(10,5))
-    ax.bar(summary["segment"], summary["load_factor"], color="skyblue")
-    ax.set_ylabel("Load Factor (%)")
-    ax.set_xlabel("Segment")
-    ax.set_title("Load Factor per Segment")
-    ax.set_xticks(range(len(summary["segment"])))  # مهم لضبط مكان كل label
-    ax.set_xticklabels(summary["segment"], rotation=45, ha='right')
-    st.pyplot(fig)
+  
 
     # جدول أسفل المخطط
     st.subheader("💺 Seats Summary by Segment")

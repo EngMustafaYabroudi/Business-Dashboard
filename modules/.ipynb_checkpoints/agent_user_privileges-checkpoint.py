@@ -1,5 +1,4 @@
 import streamlit as st
-from st_aggrid import AgGrid, GridOptionsBuilder
 import pandas as pd
 
 def show(df: pd.DataFrame):
@@ -39,28 +38,12 @@ def show(df: pd.DataFrame):
             lambda x: any(r in str(x).split("\n") for r in filter_role)
         )]
 
-    # ----- عرض الجدول -----
+    # ----- جدول عادي للبيانات -----
     st.subheader("Agent Users Table")
-    gb = GridOptionsBuilder.from_dataframe(df_filtered)
-    gb.configure_pagination(paginationAutoPageSize=True)
-    gb.configure_default_column(
-        editable=False,
-        filter=True,
-        sortable=True,
-        resizable=True,
-        wrapText=True,
-        minWidth=150,
-        cellStyle={'font-size': '14px'}
-    )
-    gb.configure_grid_options(headerHeight=40)
-    grid_options = gb.build()
-
-    AgGrid(
-        df_filtered,
-        gridOptions=grid_options,
-        height=500,
-        width='100%',
-        fit_columns_on_grid_load=True
+    st.dataframe(
+        df_filtered[["User ID", "User Name", "Agent Name", "Roles"]],
+        height=400,
+        use_container_width=True
     )
 
     st.markdown("---")
@@ -91,17 +74,38 @@ def show(df: pd.DataFrame):
     st.dataframe(role_counts.reset_index().rename(columns={"index": "Role", 0: "Count"}))
 
     # ----- Top 5 Users بعدد الصلاحيات -----
-    st.write("### 🏆 Top 5 Users with Most Roles")
     df_filtered["Role Count"] = df_filtered["Roles"].apply(
         lambda x: len(str(x).split("\n")) if pd.notna(x) else 0
     )
 
     top_users = df_filtered.sort_values("Role Count", ascending=False).head(5)
 
+   # افترض أن df هو جدولك الأصلي
+    # تحسين عرض Roles List: كل دور في سطر جديد داخل الخلية
     top_users["Roles List"] = top_users["Roles"].apply(
-        lambda x: ", ".join(str(x).split("\n")) if pd.notna(x) else ""
+        lambda x: "<br>".join(str(x).split("\n")) if pd.notna(x) else ""
     )
-
-    st.table(
-        top_users[["User ID", "User Name", "Agent Name", "Role Count", "Roles List"]]
-    )
+    
+    # إنشاء جدول HTML responsive
+    def render_html_table(df):
+        html = "<table style='width:100%; border-collapse: collapse;'>"
+        
+        # رؤوس الجدول
+        html += "<thead><tr>"
+        for col in df.columns:
+            html += f"<th style='border: 1px solid #ddd; padding: 8px; text-align:left;'>{col}</th>"
+        html += "</tr></thead>"
+        
+        # بيانات الجدول
+        html += "<tbody>"
+        for _, row in df.iterrows():
+            html += "<tr>"
+            for col in df.columns:
+                html += f"<td style='border: 1px solid #ddd; padding: 8px; vertical-align:top;'>{row[col]}</td>"
+            html += "</tr>"
+        html += "</tbody></table>"
+        
+        return html
+    
+    st.subheader("🏆 Top 5 Users with Most Roles")
+    st.markdown(render_html_table(top_users[["User ID", "User Name", "Agent Name", "Role Count", "Roles List"]]), unsafe_allow_html=True)

@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-from st_aggrid import AgGrid, GridOptionsBuilder
 
 def show(df):
     st.title("📊 Overview")
@@ -9,43 +8,50 @@ def show(df):
     if not pd.api.types.is_datetime64_any_dtype(df["flight_date"]):
         df["flight_date"] = pd.to_datetime(df["flight_date"], errors="coerce")
 
-    # ---------- فلتر الوجهات ----------
-    st.header("✈️ Filter by Segment")
-    all_segments = sorted(df["segment"].unique())
-    segment_filter_type = st.selectbox(
-        "Choose Segment Filter Type",
-        ["All Segments", "Custom Selection"],
-        index=0,
-        key="overview_segment_filter"
-    )
-    selected_segments = all_segments if segment_filter_type == "All Segments" else st.multiselect(
-        "Select Segments",
-        options=all_segments,
-        default=all_segments[:2],
-        key="overview_multiselect_segments"
-    )
+    # ---------- فلتر الوجهات و التاريخ جنب بعض ----------
+    st.header("✈️ Filter by Segment & Date")
+    col1, col2, col3 = st.columns(3)
 
-    # ---------- فلتر التاريخ ----------
-    st.header("📅 Filter by Date")
-    min_date, max_date = df["flight_date"].min(), df["flight_date"].max()
-    start_date = pd.to_datetime(
-        st.date_input(
-            "Start Date",
-            value=min_date,
-            min_value=min_date,
-            max_value=max_date,
-            key="overview_start_date"
+    # فلتر Segment
+    with col1:
+        all_segments = sorted(df["segment"].unique())
+        segment_filter_type = st.selectbox(
+            "Segment Filter Type",
+            ["All Segments", "Custom Selection"],
+            index=0,
+            key="overview_segment_filter"
         )
-    )
-    end_date = pd.to_datetime(
-        st.date_input(
-            "End Date",
-            value=max_date,
-            min_value=min_date,
-            max_value=max_date,
-            key="overview_end_date"
+        selected_segments = all_segments if segment_filter_type == "All Segments" else st.multiselect(
+            "Select Segments",
+            options=all_segments,
+            default=all_segments[:2],
+            key="overview_multiselect_segments"
         )
-    )
+
+    # فلتر Start Date
+    with col2:
+        min_date, max_date = df["flight_date"].min(), df["flight_date"].max()
+        start_date = pd.to_datetime(
+            st.date_input(
+                "Start Date",
+                value=min_date,
+                min_value=min_date,
+                max_value=max_date,
+                key="overview_start_date"
+            )
+        )
+
+    # فلتر End Date
+    with col3:
+        end_date = pd.to_datetime(
+            st.date_input(
+                "End Date",
+                value=max_date,
+                min_value=min_date,
+                max_value=max_date,
+                key="overview_end_date"
+            )
+        )
 
     # ---------- تطبيق الفلاتر ----------
     df_filtered = df[
@@ -59,7 +65,15 @@ def show(df):
         st.warning("⚠️ No data available for selected filters.")
         return
 
-    # ---------- KPIs لكل Class of Service ----------
+    # ---------- جدول البيانات ----------
+    st.header("📂 Data Table (Filtered & Cleaned)")
+    st.dataframe(
+        df_filtered.reset_index(drop=True),
+        height=500,
+        use_container_width=True
+    )
+
+    # ---------- KPIs لكل Class of Service أسفل الجدول ----------
     st.header("💡 KPIs by Class of Service")
     if "class_of_service" in df_filtered.columns:
         kpi_df = df_filtered.groupby("class_of_service").agg(
@@ -91,26 +105,6 @@ def show(df):
             st.markdown("---")
     else:
         st.warning("⚠️ Column 'class_of_service' not found in dataset.")
-
-    # ---------- جدول البيانات ----------
-    st.header("📂 Data Table (Filtered & Cleaned)")
-    gb = GridOptionsBuilder.from_dataframe(df_filtered)
-    gb.configure_pagination(paginationAutoPageSize=True)
-    gb.configure_default_column(
-        editable=False,
-        filter=True,
-        sortable=True,
-        resizable=True,
-        wrapText=True,
-        minWidth=150
-    )
-    grid_options = gb.build()
-    AgGrid(
-        df_filtered,
-        gridOptions=grid_options,
-        height=500,
-        fit_columns_on_grid_load=True
-    )
 
     # ---------- KPI إجمالي ----------
     st.header("💡 Overall Metrics")

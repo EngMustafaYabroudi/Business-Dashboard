@@ -2,13 +2,12 @@
 
 import streamlit as st
 import pandas as pd
-from st_aggrid import AgGrid, GridOptionsBuilder
 import plotly.express as px
 
 def show(df: pd.DataFrame):
     """
     Passenger Enplanement Dashboard
-    - Displays the Enplanement DataTable with AgGrid
+    - Displays the Enplanement DataTable (Streamlit Table)
     - Shows KPIs summary
     - Plots Top N & Bottom N flights by Segment + Departure Date
     """
@@ -24,23 +23,9 @@ def show(df: pd.DataFrame):
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
 
-    # -------- Display AgGrid table --------
+    # -------- Display regular Streamlit table --------
     st.subheader("📋 Enplanement Data Table")
-    gb = GridOptionsBuilder.from_dataframe(df)
-    gb.configure_pagination(paginationAutoPageSize=True)
-    gb.configure_side_bar()
-    gb.configure_default_column(resizable=True, filter=True, sortable=True, editable=False, wrapText=True, minWidth=120)
-    gb.configure_grid_options(headerHeight=40)
-    grid_options = gb.build()
-
-    AgGrid(
-        df,
-        gridOptions=grid_options,
-        height=400,
-        width="100%",
-        enable_enterprise_modules=True,
-        fit_columns_on_grid_load=True
-    )
+    st.dataframe(df.reset_index(drop=True), height=400, use_container_width=True)
 
     # -------- KPIs --------
     st.subheader("💡 KPIs Summary")
