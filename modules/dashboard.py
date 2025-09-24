@@ -9,7 +9,7 @@ def show():
     st.title("🏠 Overview")
 
     # ---------- Load Data ----------
-    SALES_FILE = "CompanyPaymentReport (6).csv"
+    SALES_FILE = "CompanyPaymentReport2025.csv"
     EMP_FILE = "PerformanaceOfSalesStaffDetail.csv"
 
     try:
