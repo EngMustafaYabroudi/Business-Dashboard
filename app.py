@@ -86,7 +86,7 @@ if page == "💺 Seat Inventory":
 elif page == "👨‍💼 Staff Performance":
     df = load_employee_performance("PerformanaceOfSalesStaffDetail.csv")
 elif page == "💵 Sales & Collections":
-    df = load_payment_report("CompanyPaymentReport (6).csv")
+    df = load_payment_report("CompanyPaymentReport2025.csv")
 elif page == "🛫 Passenger Enplanement":
     df = load_enplanement_report("EnplanementReport.csv")
 elif page == "🤝 Agent Productivity":
